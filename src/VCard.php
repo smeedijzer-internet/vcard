@@ -51,6 +51,18 @@ class VCard
     ];
 
     /**
+     * Escaped strings
+     *
+     * @var array
+     */
+    private $backslashEscapedCharacters = [
+        "\\" => "\\\\",
+        "," => "\\,"
+        "\r\n" => "\\n",
+        "\n" => "\\n"
+    ];
+
+    /**
      * Properties
      *
      * @var array
@@ -62,7 +74,14 @@ class VCard
      *
      * @var string
      */
-    public $charset = 'utf-8';
+    public $charset = 'UTF-8';
+
+    /**
+     * Line Folding
+     *
+     * @var bool
+     */
+    private $folding = true;
 
     /**
      * Add address
@@ -368,6 +387,28 @@ class VCard
     }
 
     /**
+     * Add full name
+     *
+     * @param  string $name
+     * @param  string [optional] $prefix
+     * @param  string [optional] $suffix
+     * @return $this
+     */
+    public function addFullName(
+        $name = '',
+        $prefix = '',
+        $suffix = ''
+    ) {
+        $parts = explode(' ', $name);
+        $lastName = array_pop($parts);
+        $firstName = array_shift($parts);
+        $additional = implode(' ', $parts);
+        $this->addName($lastName, $firstName, $additional, $prefix, $suffix);
+
+        return $this;
+    }
+
+    /**
      * Add note
      *
      * @param  string $note
@@ -513,6 +554,26 @@ class VCard
     }
 
     /**
+     * Add custom property
+     *
+     * @param  string $property
+     * @param  string $value
+     * @param  string [optional] $type
+     * @param  string [optional] $key
+     * @return $this
+     */
+    public function addCustomProperty($property, $value, $type = '', $key = null)
+    {
+        $this->setProperty(
+            empty($key) ? uniqid('custom-') : $key,
+            $property . (($type != '') ? ';' . $type : ''),
+            $value
+        );
+
+        return $this;
+    }
+
+    /**
      * Build VCard (.vcf)
      *
      * @return string
@@ -524,11 +585,18 @@ class VCard
         $string .= "VERSION:3.0\r\n";
         $string .= "REV:" . date("Y-m-d") . "T" . date("H:i:s") . "Z\r\n";
 
-        // loop all properties
         $properties = $this->getProperties();
-        foreach ($properties as $property) {
-            // add to string
-            $string .= $this->fold($property['key'] . ':' . $this->escape($property['value']) . "\r\n");
+
+        // loop all properties
+        // add to string
+        if ($this->getLineFolding()) {
+            foreach ($properties as $property) {
+                $string .= $this->fold($property['key'] . ':' . $this->escape($property['value']) . "\r\n");
+            }
+        } else {
+            foreach ($properties as $property) {
+                $string .= $property['key'] . ':' . $this->escape($property['value']) . "\r\n";
+            }
         }
 
         // add to string
@@ -661,7 +729,7 @@ class VCard
     }
 
     /**
-     * Escape newline characters according to RFC2425 section 5.8.4.
+     * Escape backslashes, newlines, and commas according to RFC2425 section 5.8.4.
      *
      * @link http://tools.ietf.org/html/rfc2425#section-5.8.4
      * @param  string $text
@@ -669,8 +737,9 @@ class VCard
      */
     protected function escape($text)
     {
-        $text = str_replace("\r\n", "\\n", $text);
-        $text = str_replace("\n", "\\n", $text);
+        $search = array_keys($this->backslashEscapedCharacters);
+        $replace = array_values($this->backslashEscapedCharacters);
+        $text = str_replace($search, $replace, $text);
 
         return $text;
     }
@@ -704,6 +773,16 @@ class VCard
     public function getCharsetString()
     {
         return ';CHARSET=' . $this->charset;
+    }
+
+    /**
+     * Get line folding
+     *
+     * @return string
+     */
+    public function getLineFolding()
+    {
+        return $this->folding;
     }
 
     /**
@@ -757,7 +836,7 @@ class VCard
 
         if ((bool)$asAssociative) {
             return [
-                'Content-type' => $contentType,
+                'Content-Type' => $contentType,
                 'Content-Disposition' => $contentDisposition,
                 'Content-Length' => $contentLength,
                 'Connection' => $connection,
@@ -765,7 +844,7 @@ class VCard
         }
 
         return [
-            'Content-type: ' . $contentType,
+            'Content-Type: ' . $contentType,
             'Content-Disposition: ' . $contentDisposition,
             'Content-Length: ' . $contentLength,
             'Connection: ' . $connection,
@@ -868,6 +947,17 @@ class VCard
     public function setCharset($charset)
     {
         $this->charset = $charset;
+    }
+
+    /**
+     * Set line folding for VCards
+     *
+     * @param  bool $fold
+     * @return void
+     */
+    public function setLineFolding($folding)
+    {
+        $this->folding = $folding;
     }
 
     /**
