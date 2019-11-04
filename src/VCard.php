@@ -495,11 +495,13 @@ class VCard
         $string .= "VERSION:3.0\r\n";
         $string .= "REV:" . date("Y-m-d") . "T" . date("H:i:s") . "Z\r\n";
 
+        $isUnicode = $this->getCharset() === 'utf-8' ? true : false;
+
         // loop all properties
         $properties = $this->getProperties();
         foreach ($properties as $property) {
             // add to string
-            $string .= $this->fold($property['key'] . ':' . $this->escape($property['value']) . "\r\n");
+            $string .= $this->fold($property['key'] . ':' . $this->escape($property['value']) . "\r\n", $isUnicode);
         }
 
         // add to string
@@ -598,17 +600,24 @@ class VCard
      * Fold a line according to RFC2425 section 5.8.1.
      *
      * @link http://tools.ietf.org/html/rfc2425#section-5.8.1
-     * @param  string $text
+     * @param string $text
+     * @param bool   $isUnicode
      * @return mixed
      */
-    protected function fold($text)
+    protected function fold($text, $isUnicode = true)
     {
         if (strlen($text) <= 75) {
             return $text;
         }
 
+        if ($isUnicode) {
+            $chunk = $this->chunk_split_unicode($text, 73, "\r\n ");
+        } else {
+            $chunk = chunk_split($text, 73, "\r\n ");
+        }
+
         // split, wrap and trim trailing separator
-        return substr($this->chunk_split_unicode($text, 73, "\r\n "), 0, -3);
+        return substr($chunk, 0, -3);
     }
 
     /**
@@ -622,7 +631,7 @@ class VCard
      */
     protected function chunk_split_unicode($body, $chunklen = 76, $end = "\r\n")
     {
-        $array = array_chunk(
+         $array = array_chunk(
             preg_split("//u", $body, -1, PREG_SPLIT_NO_EMPTY), $chunklen);
         $body = "";
         foreach ($array as $item) {
