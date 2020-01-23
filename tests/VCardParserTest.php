@@ -1,9 +1,9 @@
 <?php
 
-namespace JeroenDesloovere\VCard\tests;
+namespace Mkx\VCard\tests;
 
-use JeroenDesloovere\VCard\VCard;
-use JeroenDesloovere\VCard\VCardParser;
+use Mkx\VCard\VCard;
+use Mkx\VCard\VCardParser;
 
 /**
  * Unit tests for our VCard parser.

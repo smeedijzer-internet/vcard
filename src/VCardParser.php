@@ -1,6 +1,6 @@
 <?php
 
-namespace JeroenDesloovere\VCard;
+namespace Mkx\VCard;
 
 /*
  * This file is part of the VCard PHP Class from Jeroen Desloovere.
@@ -197,6 +197,9 @@ class VCardParser implements Iterator
                 }
 
                 switch (strtoupper($element)) {
+                    case 'UID':
+                        $cardData->uid = $value;
+                        break;
                     case 'FN':
                         $cardData->fullname = $value;
                         break;

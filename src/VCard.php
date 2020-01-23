@@ -1,6 +1,6 @@
 <?php
 
-namespace JeroenDesloovere\VCard;
+namespace Mkx\VCard;
 
 /*
  * This file is part of the VCard PHP Class from Jeroen Desloovere.
@@ -507,6 +507,24 @@ class VCard
             'url',
             'URL' . (($type != '') ? ';' . $type : ''),
             $url
+        );
+
+        return $this;
+    }
+
+    
+    /**
+     * Add UID
+     *
+     * @param  string $uid
+     * @return $this
+     */
+    public function addURL($url, $type = '')
+    {
+        $this->setProperty(
+            'uid',
+            'UID:',
+            $uid
         );
 
         return $this;
