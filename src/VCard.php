@@ -519,7 +519,7 @@ class VCard
      * @param  string $uid
      * @return $this
      */
-    public function addUID($url, $type = '')
+    public function addUID($uid, $type = '')
     {
         $this->setProperty(
             'uid',
