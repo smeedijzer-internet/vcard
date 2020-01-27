@@ -523,7 +523,7 @@ class VCard
     {
         $this->setProperty(
             'uid',
-            'UID:',
+            'UID',
             $uid
         );
 
