@@ -506,7 +506,7 @@ class VCard
         $this->setProperty(
             'url',
             'URL' . (($type != '') ? ';' . $type : ''),
-            $url
+            urldecode($url)
         );
 
         return $this;
@@ -885,6 +885,9 @@ class VCard
             $value = implode($separator, $value);
         }
 
+        // Convert to special characters.
++       $value = html_entity_decode($value, ENT_QUOTES);
+
         // trim unneeded values
         $value = trim($value, $separator);
 
@@ -945,6 +948,9 @@ class VCard
 
         // we define that we set this element
         $this->definedElements[$element] = true;
+
+        $value = htmlspecialchars_decode($value);
+        $value = html_entity_decode($value, ENT_QUOTES);
 
         // adding property
         $this->properties[] = [
