@@ -64,6 +64,8 @@ class VCard
      */
     public $charset = 'utf-8';
 
+    private $urlItemIndex = 0;
+
     /**
      * Add address
      *
@@ -87,7 +89,7 @@ class VCard
         $region = '',
         $zip = '',
         $country = '',
-        $type = 'WORK;POSTAL'
+        $type = 'type=WORK;type=POSTAL'
     ) {
         // init value
         $value = $name . ';' . $extended . ';' . $street . ';' . $city . ';' . $region . ';' . $zip . ';' . $country;
@@ -156,7 +158,7 @@ class VCard
     {
         $this->setProperty(
             'email',
-            'EMAIL;INTERNET' . (($type != '') ? ';' . $type : ''),
+            'EMAIL;type=INTERNET' . (($type != '') ? ';' . $type : ''),
             $address
         );
 
@@ -267,7 +269,7 @@ class VCard
             }
 
             $value = base64_encode($value);
-            $property .= ";ENCODING=b;TYPE=" . $fileType;
+            $property .= ";ENCODING=b;TYPE=" . $mimeType;
         } else {
             if (filter_var($url, FILTER_VALIDATE_URL) !== false) {
                 $propertySuffix = ';VALUE=URL';
@@ -513,6 +515,32 @@ class VCard
     }
 
     /**
+     * Add URL
+     *
+     * @param  string $url
+     * @param  string [optional] $type Type may be WORK | HOME
+     * @return $this
+     */
+    public function addUrlItem($url, $label)
+    {
+        $this->urlItemIndex++;
+
+        $this->setProperty(
+            'item' . $this->urlItemIndex . '.URL',
+            'item' . $this->urlItemIndex . '.URL',
+            $url
+        );
+
+        $this->setProperty(
+            'item' . $this->urlItemIndex . '.X-ABLabel',
+            'item' . $this->urlItemIndex . '.X-ABLabel',
+            $label
+        );
+
+        return $this;
+    }
+
+    /**
      * Build VCard (.vcf)
      *
      * @return string
@@ -522,7 +550,6 @@ class VCard
         // init string
         $string = "BEGIN:VCARD\r\n";
         $string .= "VERSION:3.0\r\n";
-        $string .= "REV:" . date("Y-m-d") . "T" . date("H:i:s") . "Z\r\n";
 
         // loop all properties
         $properties = $this->getProperties();
@@ -632,32 +659,7 @@ class VCard
      */
     protected function fold($text)
     {
-        if (strlen($text) <= 75) {
-            return $text;
-        }
-
-        // split, wrap and trim trailing separator
-        return substr($this->chunk_split_unicode($text, 75, "\r\n "), 0, -3);
-    }
-
-    /**
-     * multibyte word chunk split
-     * @link http://php.net/manual/en/function.chunk-split.php#107711
-     * 
-     * @param  string  $body     The string to be chunked.
-     * @param  integer $chunklen The chunk length.
-     * @param  string  $end      The line ending sequence.
-     * @return string            Chunked string
-     */
-    protected function chunk_split_unicode($body, $chunklen = 76, $end = "\r\n")
-    {
-        $array = array_chunk(
-            preg_split("//u", $body, -1, PREG_SPLIT_NO_EMPTY), $chunklen);
-        $body = "";
-        foreach ($array as $item) {
-            $body .= join("", $item) . $end;
-        }
-        return $body;
+        return $text;
     }
 
     /**
@@ -703,7 +705,12 @@ class VCard
      */
     public function getCharsetString()
     {
-        return ';CHARSET=' . $this->charset;
+        $charsetString = '';
+        if ($this->charset == 'utf-8') {
+            $charsetString = ';CHARSET=' . $this->charset;
+        }
+
+        return $charsetString;
     }
 
     /**
@@ -752,12 +759,17 @@ class VCard
     {
         $contentType = $this->getContentType() . '; charset=' . $this->getCharset();
         $contentDisposition = 'attachment; filename=' . $this->getFilename() . '.' . $this->getFileExtension();
-        $contentLength = mb_strlen($this->getOutput(), '8bit');
         $connection = 'close';
+
+        if (function_exists('mb_strlen')) {
+            $contentLength = mb_strlen($this->getOutput(), $this->getCharset());
+        } else {
+            $contentLength = strlen($this->getOutput());
+        }
 
         if ((bool)$asAssociative) {
             return [
-                'Content-type' => $contentType,
+                'Content-Type' => $contentType,
                 'Content-Disposition' => $contentDisposition,
                 'Content-Length' => $contentLength,
                 'Connection' => $connection,
@@ -765,7 +777,7 @@ class VCard
         }
 
         return [
-            'Content-type: ' . $contentType,
+            'Content-Type: ' . $contentType,
             'Content-Disposition: ' . $contentDisposition,
             'Content-Length: ' . $contentLength,
             'Connection: ' . $connection,
