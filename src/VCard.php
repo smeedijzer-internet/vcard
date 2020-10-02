@@ -8,6 +8,7 @@ use JeroenDesloovere\VCard\Exception\VCardException;
 use JeroenDesloovere\VCard\Property\Address;
 use JeroenDesloovere\VCard\Property\Anniversary;
 use JeroenDesloovere\VCard\Property\Birthdate;
+use JeroenDesloovere\VCard\Property\Categories;
 use JeroenDesloovere\VCard\Property\Email;
 use JeroenDesloovere\VCard\Property\FullName;
 use JeroenDesloovere\VCard\Property\Gender;
@@ -50,6 +51,7 @@ final class VCard
         Photo::class,
         Logo::class,
         Telephone::class,
+	    Categories::class,
     ];
 
     private const ONLY_APPLY_TO_INDIVIDUAL_KIND = [
