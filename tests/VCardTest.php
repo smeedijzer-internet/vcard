@@ -1,6 +1,6 @@
 <?php
 
-namespace JeroenDesloovere\VCard\tests;
+namespace Mkx\VCard\tests;
 
 // required to load
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -12,7 +12,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
  * file that was distributed with this source code.
  */
 
-use JeroenDesloovere\VCard\VCard;
+use Mkx\VCard\VCard;
 
 /**
  * This class will test our VCard PHP Class which can generate VCards.

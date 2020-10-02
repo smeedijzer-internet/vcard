@@ -1,6 +1,6 @@
 <?php
 
-namespace JeroenDesloovere\VCard;
+namespace Mkx\VCard;
 
 /*
  * This file is part of the VCard PHP Class from Jeroen Desloovere.
@@ -512,6 +512,24 @@ class VCard
         return $this;
     }
 
+    
+    /**
+     * Add UID
+     *
+     * @param  string $uid
+     * @return $this
+     */
+    public function addUID($uid, $type = '')
+    {
+        $this->setProperty(
+            'uid',
+            'UID',
+            $uid
+        );
+
+        return $this;
+    }
+
     /**
      * Build VCard (.vcf)
      *
@@ -522,7 +540,7 @@ class VCard
         // init string
         $string = "BEGIN:VCARD\r\n";
         $string .= "VERSION:3.0\r\n";
-        $string .= "REV:" . date("Y-m-d") . "T" . date("H:i:s") . "Z\r\n";
+        $string .= "REV:" . date("Ymd") . "T" . date("His") . "Z\r\n";
 
         // loop all properties
         $properties = $this->getProperties();
