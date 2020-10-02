@@ -64,6 +64,11 @@ class VCardParser implements Iterator
         $this->parse();
     }
 
+	public function getVCardObjects()
+	{
+		return $this->vcardObjects;
+	}
+    
     public function rewind()
     {
         $this->position = 0;
